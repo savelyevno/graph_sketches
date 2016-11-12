@@ -1,5 +1,6 @@
-from tools.primality_test import get_next_prime
 from random import randint
+
+from tools.primality_test import get_next_prime
 
 
 class OneSparseRecoverer:
@@ -45,7 +46,7 @@ class OneSparseRecoverer:
 
         self.p = get_next_prime(n*n)
 
-        self.z = randint(1, self.p)
+        self.z = randint(1, self.p - 1)
 
         self.iota = 0
         self.fi = 0
