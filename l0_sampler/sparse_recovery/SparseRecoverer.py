@@ -1,9 +1,7 @@
-from math import log
-
+from sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
 from tools.hash_function import pick_k_ind_hash_function
+from math import log
 from tools.validation import check_in_range, check_type
-
-from l0_sampler.sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
 
 
 class SparseRecoverer:
@@ -41,7 +39,7 @@ class SparseRecoverer:
             2-independent hash function for every row.
 
         Time Complexity
-            O(s * log(s / delta) * log(n)**5)
+            O(s * log(s / delta) * log(n)**4)
 
         :param n:       Length of estimating vector.
         :type n:        int
@@ -67,14 +65,12 @@ class SparseRecoverer:
 
         self.R = [[OneSparseRecoverer(self.n) for j in range(self.columns)] for i in range(self.rows)]
 
-        self.sum_of_vector = 0
-
     def update(self, i, Delta):
         """
             Iterates through rows and updates corresponding cells.
 
         Time Complexity
-            O(log(s / delta) * log(n)**3)
+            O(log(s / delta) * log(n))
 
         :param i:       Index of update.
         :type i:        int
@@ -84,10 +80,7 @@ class SparseRecoverer:
         :rtype:         None
         """
 
-        self.sum_of_vector += Delta
-
         for l in range(self.rows):
-            print(self.hash_function[l](i))
             self.R[l][self.hash_function[l](i)].update(i, Delta)
 
     def recover(self):
@@ -96,12 +89,11 @@ class SparseRecoverer:
             Recovered elements are merged into a dictionary to avoid duplicates.
 
         Time Complexity
-            O(s * log(s / delta) * log(n)**3)
+            O(s * log(s / delta) * log(n))
 
-        :return:    If resulting dictionary is empty return False, if it contains
-        more than s elements or sum of retrieved vector != correct sum of the vector
-        returns True, otherwise return this dictionary.
-        :rtype:     dict or bool
+        :return:    If resulting dictionary is not empty returns it, otherwise
+                    returns None.
+        :rtype:     dict or None
         """
 
         result = {}
@@ -109,14 +101,11 @@ class SparseRecoverer:
             for j in range(self.columns):
                 one_sparse_recovery_result = self.R[i][j].recover()
 
-                if not isinstance(one_sparse_recovery_result, bool):
+                if one_sparse_recovery_result is not None:
                     result[one_sparse_recovery_result[0]] = one_sparse_recovery_result[1]
 
-        sum_of_recovered_vector = sum(result.values())
         if len(result) == 0:
-            return False
-        elif len(result) > self.sparse_degree or sum_of_recovered_vector != self.sum_of_vector:
-            return True
+            return None
         else:
             return result
 
@@ -141,7 +130,7 @@ class SparseRecoverer:
             !Assuming they have the same hash functions.
 
         Time Complexity
-            O(s*log(s / delta)*log(n)**2)
+            O(s*log(s / delta))
 
         :param another_s_sparse_recoverer:  s-sparse recoverer to add.
         :type another_s_sparse_recoverer:   SparseRecoverer
@@ -154,7 +143,6 @@ class SparseRecoverer:
            self.delta != another_s_sparse_recoverer.delta:
             raise ValueError('s-sparse recoverers are not compatible')
         else:
-            self.sum_of_vector += another_s_sparse_recoverer.sum_of_vector
             for i in range(self.rows):
                 for j in range(self.columns):
                     self.R[i][j].add(another_s_sparse_recoverer.R[i][j])

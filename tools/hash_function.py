@@ -1,6 +1,5 @@
-from random import randint
-
 from tools.primality_test import get_next_prime
+from random import randint
 from tools.validation import check_type
 
 
@@ -24,7 +23,7 @@ def pick_k_ind_hash_function(n, w, k):
         h(x) = a[0] * x**(k - 1) + ... + a[k - 2] * x + a[k - 1] mod p mod w.
 
     Time complexity
-        Constructed hash function's complexity is O(k * log(x)**2).
+        Constructed hash function's complexity is O(k * log(x)).
 
     References
         https://en.wikipedia.org/wiki/K-independent_hashing

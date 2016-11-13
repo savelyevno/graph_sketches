@@ -1,6 +1,5 @@
-from math import log2
 from random import randint
-
+from math import log2
 from tools.validation import check_type
 
 
@@ -19,7 +18,7 @@ def is_prime(n):
         Probability of such event is not greater than 1 / n**2.
 
     Time complexity
-        O(log(n)**4)
+        O(log(n)**3)
 
     References
         https://en.wikipedia.org/wiki/Miller–Rabin_primality_test
@@ -41,7 +40,7 @@ def is_prime(n):
 
     k = int(log2(n)) + 1
     for i in range(k):
-        a = randint(2, n - 2)
+        a = randint(2, n)
 
         x = pow(a, d, n)    # x = (a**d) % n
 
@@ -76,7 +75,7 @@ def get_next_prime(n):
     :rtype:     int
 
     Time complexity
-        O(log(n)**5)
+        O(log(n)**4)
 
     """
 

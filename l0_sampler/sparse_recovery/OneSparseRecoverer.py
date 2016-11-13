@@ -1,6 +1,5 @@
-from random import randint
-
 from tools.primality_test import get_next_prime
+from random import randint
 
 
 class OneSparseRecoverer:
@@ -36,7 +35,7 @@ class OneSparseRecoverer:
         """
 
         Time Complexity
-            O(log(n)**5)
+            O(log(n)**4)
 
         :param n:   Size of array.
         :type n:    int
@@ -57,7 +56,7 @@ class OneSparseRecoverer:
             Update of type a_i += Delta.
 
         Time Complexity
-            O(log(n)**3)
+            O(log(n))
 
         :param i:       Index of an update.
         :type i:        int
@@ -76,28 +75,24 @@ class OneSparseRecoverer:
             Attempt to recover an element.
 
         Time Complexity
-            O(log(n)**3)
+            O(log(n))
 
-        :return:    False if a_i is empty,
-                    True if it contains more than one non-zero element
-                    a_i, otherwise.
-        :rtype:     (int, int) or bool
+        :return:    On success return a_i, otherwise FAIL.
+        :rtype:     (int, int) or None
         """
 
-        if self.fi == 0:
-            return False
-        elif self.iota % self.fi == 0 and self.iota / self.fi > 0 and \
+        if self.fi != 0 and self.iota % self.fi == 0 and self.iota / self.fi > 0 and \
                 self.tau == self.fi * pow(self.z, int(self.iota / self.fi), self.p) % self.p:
             return int(self.iota / self.fi) - 1, self.fi
         else:
-            return True
+            return None
 
     def add(self, another_one_sparse_recoverer):
         """
             Combines two 1-sparse recoverers by adding them.
 
         Time Complexity
-            O(log(n)**2)
+            O(1)
 
         :param another_one_sparse_recoverer:
         :type another_one_sparse_recoverer:     OneSparseRecoverer

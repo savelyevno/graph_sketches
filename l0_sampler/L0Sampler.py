@@ -1,14 +1,13 @@
+from sparse_recovery.SparseRecoverer import SparseRecoverer
+from tools.hash_function import pick_k_ind_hash_function
 import random
 from math import log, log2, ceil
-
-from tools.hash_function import pick_k_ind_hash_function
-from l0_sampler.sparse_recovery.SparseRecoverer import SparseRecoverer
 from tools.validation import check_in_range, check_type
 
 
 class L0Sampler:
     """
-        l0sampler data structure.
+        l0-sampler data structure.
 
         Contains sketched info about integer-valued vector a
         of length n allowing to make linear updates to a and
@@ -18,7 +17,7 @@ class L0Sampler:
 
         Space Complexity
             O(s * log(s / delta) * log(n)**2), where eps and delta such that
-            l0sampler success probability is at least 1 - delta, output
+            l0-sampler success probability is at least 1 - delta, output
             distribution is in range
             [(1 - eps)/l0_norm(a) - delta, (1 + eps)/l0_norm(a) + delta].
 
@@ -34,7 +33,7 @@ class L0Sampler:
         """
 
         Time Complexity:
-            O(log(n)**8)
+            O(log(n)**7)
 
         :param n:           Length of vector a.
         :type n:            int
@@ -73,7 +72,7 @@ class L0Sampler:
             Update of type a_i += Delta.
 
             Time Complexity
-                O(log(n)**5)
+                O(log(n)**3)
 
         :param i:       Index of update.
         :type i:        int
@@ -97,7 +96,7 @@ class L0Sampler:
             (This one is described in the paper.)
 
             Time Complexity
-                O(log(n)**6)
+                O(log(n)**4)
 
         :return:    Return tuple (i, a_i) or FAIL.
         :rtype:     None or (int, int)
@@ -126,7 +125,7 @@ class L0Sampler:
             Get l0-sample.
 
             Time Complexity
-                O(log(n)**6)
+                O(log(n)**4)
 
         :return:    Return tuple (i, a_i) or FAIL.
         :rtype:     None or (int, int)
@@ -153,9 +152,9 @@ class L0Sampler:
         :rtype:     dict
         """
         result = {
-            'l0sampler levels': self.levels,
-            'l0sampler s': self.sparse_degree,
-            'l0sampler k': self.k
+            'l0-sampler levels': self.levels,
+            'l0-sampler s': self.sparse_degree,
+            'l0-sampler k': self.k
         }
 
         result = {**result, **self.recoverers[0]._get_info()}
@@ -170,9 +169,9 @@ class L0Sampler:
             if they were initialized with the same random bits)
 
         Time Complexity
-            O(log(n)**4)
+            O(log(n)**3)
 
-        :param another_l0_sampler:  l0sampler to add.
+        :param another_l0_sampler:  l0-sampler to add.
         :type another_l0_sampler:   L0Sampler
         :return:
         :rtype:     None
