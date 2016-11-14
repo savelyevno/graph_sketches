@@ -1,7 +1,8 @@
-from sparse_recovery.SparseRecoverer import SparseRecoverer
-from tools.hash_function import pick_k_ind_hash_function
 import random
 from math import log, log2, ceil
+
+from l0_sampler.sparse_recovery.SparseRecoverer import SparseRecoverer
+from tools.hash_function import pick_k_ind_hash_function
 from tools.validation import check_in_range, check_type
 
 
@@ -33,7 +34,7 @@ class L0Sampler:
         """
 
         Time Complexity:
-            O(log(n)**7)
+            O(log(n)**4)
 
         :param n:           Length of vector a.
         :type n:            int
@@ -54,14 +55,15 @@ class L0Sampler:
         self.n = n
         self.levels = int(ceil(log2(n)))
 
-        self.eps = 1/n
-        self.delta = 1/n
+        self.eps = 1/100
+        self.delta = 1/100
 
         # for more accurate distribution among levels one may want to increase this value
         self.n_hash_power = 1
 
-        self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
-        self.k = int(self.sparse_degree / 2)
+        # self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
+        self.sparse_degree = int(ceil(log(100))) << 1
+        self.k = self.sparse_degree >> 1
 
         self.hash_function = pick_k_ind_hash_function(n, n ** self.n_hash_power, self.k)
 
@@ -81,10 +83,6 @@ class L0Sampler:
         :return: 
         :rtype:         None
         """
-
-        check_type(i, int)
-        check_type(Delta, int)
-        check_in_range(0, self.n - 1, i)
 
         for l in range(self.levels):
             if (self.n**self.n_hash_power) >> l > self.hash_function(i):
@@ -185,3 +183,28 @@ class L0Sampler:
 
         for l in range(self.levels):
             self.recoverers[l].add(another_l0_sampler.recoverers[l])
+
+    def subtract(self, another_l0_sampler):
+        """
+            Combines two l0-samplers by subtracting them.
+
+            !Assuming they have the same hash functions. (This should hold
+            if they were initialized with the same random bits)
+
+        Time Complexity
+            O(log(n)**3)
+
+        :param another_l0_sampler:  l0-sampler to add.
+        :type another_l0_sampler:   L0Sampler
+        :return:
+        :rtype:     None
+        """
+
+        if self.n != another_l0_sampler.n:
+            raise ValueError('l0-samplers are not compatible')
+        if self.init_seed is None or another_l0_sampler.init_seed is None or\
+           self.init_seed != another_l0_sampler.init_seed:
+            raise ValueError('samplers are not initialized from the same random bits')
+
+        for l in range(self.levels):
+            self.recoverers[l].subtract(another_l0_sampler.recoverers[l])

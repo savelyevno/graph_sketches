@@ -1,6 +1,4 @@
 from random import randint
-from math import log2
-from tools.validation import check_type
 
 
 def is_prime(n):
@@ -25,8 +23,6 @@ def is_prime(n):
 
     """
 
-    check_type(n, int)
-
     if n == 2 or n == 3:
         return True
     elif n == 1 or n % 2 == 0:
@@ -38,8 +34,7 @@ def is_prime(n):
         r += 1
         d >>= 1
 
-    k = int(log2(n)) + 1
-    for i in range(k):
+    for i in range(r):
         a = randint(2, n)
 
         x = pow(a, d, n)    # x = (a**d) % n
@@ -70,7 +65,7 @@ def get_next_prime(n):
         Finds smallest prime greater than n.
 
     :param n:   Lower bound of value of prime.
-    :type n:    int or float
+    :type n:    int
     :return:    Prime p >= n.
     :rtype:     int
 
@@ -79,9 +74,7 @@ def get_next_prime(n):
 
     """
 
-    check_type(n, int, float)
-
-    p = int(n) + 1
+    p = n + 1
     if p % 2 == 0:
         p += 1
 

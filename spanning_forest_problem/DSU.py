@@ -1,13 +1,12 @@
 import numpy as np
 
-from graph.GraphSketch import Edge
-from tools.validation import check_type
-
 
 class DSU:
+    """
+        Disjoint set union data structure.
+    """
     def __init__(self, n):
         """
-            Disjoint set union data structure.
 
         :param n:   Number of elements.
         :type n:    int
@@ -15,11 +14,11 @@ class DSU:
 
         self.n = n
 
-        self.parent = np.arange(n)
+        self.parent = [i for i in range(n)]
         self.members = [[i] for i in range(n)]
         self.leaders = {i for i in range(n)}
 
-    def find(self, u):
+    def find_leader(self, u):
         """
             Finds leader of the set in which u is present.
 
@@ -33,7 +32,7 @@ class DSU:
         """
 
         if u != self.parent[u]:
-            self.parent[u] = self.find(self.parent[u])
+            self.parent[u] = self.find_leader(self.parent[u])
 
         return self.parent[u]
 
@@ -52,16 +51,15 @@ class DSU:
         :rtype:
         """
 
-        u = self.find(u)
-        v = self.find(v)
+        u = self.find_leader(u)
+        v = self.find_leader(v)
 
         if u != v:
             if len(self.members[u]) < len(self.members[v]):
                 u, v = v, u
 
             while len(self.members[v]) > 0:
-                w = self.members[v][len(self.members[v]) - 1]
-                self.members[v].pop()
+                w = self.members[v].pop()
 
                 self.parent[w] = u
                 self.members[u].append(w)

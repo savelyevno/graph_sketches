@@ -18,6 +18,9 @@ def edge_to_index(e, n):
     :rtype:     int
     """
 
+    if e.u > e.v:
+        e = Edge(e.v, e.u)
+
     return e.u * (n - 1) - (e.u * (e.u + 1)) // 2 + e.v - 1
 
 

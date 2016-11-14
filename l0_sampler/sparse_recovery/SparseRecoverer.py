@@ -1,6 +1,7 @@
-from sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
-from tools.hash_function import pick_k_ind_hash_function
 from math import log
+
+from l0_sampler.sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
+from tools.hash_function import pick_k_ind_hash_function
 from tools.validation import check_in_range, check_type
 
 
@@ -48,11 +49,6 @@ class SparseRecoverer:
         :param delta:   Error term parameter.
         :type delta:    float
         """
-
-        check_type(n, int)
-        check_type(s, int)
-        check_type(delta, float)
-        check_in_range(1, n, s)
 
         self.n = n
         self.delta = delta
@@ -146,3 +142,27 @@ class SparseRecoverer:
             for i in range(self.rows):
                 for j in range(self.columns):
                     self.R[i][j].add(another_s_sparse_recoverer.R[i][j])
+
+    def subtract(self, another_s_sparse_recoverer):
+        """
+            Combines to s-sparse recoverers by subtracting.
+
+            !Assuming they have the same hash functions.
+
+        Time Complexity
+            O(s*log(s / delta))
+
+        :param another_s_sparse_recoverer:  s-sparse recoverer to add.
+        :type another_s_sparse_recoverer:   SparseRecoverer
+        :return:
+        :rtype:
+        """
+
+        if self.n != another_s_sparse_recoverer.n or\
+           self.sparse_degree != another_s_sparse_recoverer.sparse_degree or\
+           self.delta != another_s_sparse_recoverer.delta:
+            raise ValueError('s-sparse recoverers are not compatible')
+        else:
+            for i in range(self.rows):
+                for j in range(self.columns):
+                    self.R[i][j].subtract(another_s_sparse_recoverer.R[i][j])

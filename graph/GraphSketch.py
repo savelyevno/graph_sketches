@@ -38,39 +38,52 @@ class GraphSketch:
         self.n = n
 
         self.init_seed = randint(0, 2147483647)
-        self.a = [L0Sampler(n*(n - 1)/2, self.init_seed) for i in range(n)]
+        self.a = [L0Sampler(n*(n - 1) >> 1, self.init_seed) for i in range(n)]
 
-    def add_edge(self, *args):
+    def add_edge(self, e):
         """
-            Adds edge(s).
+               Adds edge.
 
         Time Complexity
-            O(log(n)**3) for every edge
+            O(log(n)**3)
 
-        :param args:    Edge or list of edges to add.
-        :type args:     Edge or list(Edge)
+        :param e:   Edge to add.
+        :type e:    Edge
         :return:
         :rtype:
         """
 
-        check_type(args, Edge, list(Edge))
+        check_in_range(0, self.n - 1, e.u)
+        check_in_range(0, self.n - 1, e.v)
 
-        for e in args:
-            check_in_range(0, self.n - 1, e.u)
-            check_in_range(0, self.n - 1, e.v)
+        if e.u < e.v:
+            self.a[e.u].update(edge_to_index(e, self.n), 1)
+            self.a[e.v].update(edge_to_index(e, self.n), -1)
+        else:
+            self.a[e.u].update(edge_to_index(e, self.n), -1)
+            self.a[e.v].update(edge_to_index(e, self.n), 1)
 
-            inv_e = Edge(e.v, e.u)
-
-            if e.u < e.v:
-                self.a[e.u].update(edge_to_index(e, self.n), 1)
-                self.a[e.v].update(edge_to_index(inv_e, self.n), -1)
-            else:
-                self.a[e.u].update(edge_to_index(e, self.n), -1)
-                self.a[e.v].update(edge_to_index(inv_e, self.n), 1)
-
-    def remove_edge(self, *args):
+    def add_edges(self, edges):
         """
-            Removes edge(s).
+            Adds edges.
+
+        Time Complexity
+            O(log(n)**3) for every edge
+
+        :param edges:    Edge or list of edges to add.
+        :type edges:     list
+        :return:
+        :rtype:
+        """
+
+        check_type(edges, list)
+
+        for e in edges:
+            self.add_edge(e)
+
+    def remove_edge(self, e):
+        """
+            Removes edge.
 
         Time Complexity
             O(log(n)**3)
@@ -81,20 +94,16 @@ class GraphSketch:
         :rtype:
         """
 
-        check_type(args, Edge, list(Edge))
+        check_type(e, Edge)
 
-        for e in args:
-            check_in_range(0, self.n - 1, e.u)
-            check_in_range(0, self.n - 1, e.v)
-
-            inv_e = Edge(e.v, e.u)
-
-            if e.u < e.v:
-                self.a[e.u].update(edge_to_index(e, self.n), -1)
-                self.a[e.v].update(edge_to_index(inv_e, self.n), 1)
-            else:
-                self.a[e.u].update(edge_to_index(e, self.n), 1)
-                self.a[e.v].update(edge_to_index(inv_e, self.n), -1)
+        check_in_range(0, self.n - 1, e.u)
+        check_in_range(0, self.n - 1, e.v)
+        if e.u < e.v:
+            self.a[e.u].update(edge_to_index(e, self.n), -1)
+            self.a[e.v].update(edge_to_index(e, self.n), 1)
+        else:
+            self.a[e.u].update(edge_to_index(e, self.n), 1)
+            self.a[e.v].update(edge_to_index(e, self.n), -1)
 
     def sample_edge(self, u):
         """
@@ -112,10 +121,10 @@ class GraphSketch:
         check_type(u, int)
         check_in_range(0, self.n - 1, u)
 
-        sample = self.a[u].get_sample()[0]
+        sample = self.a[u].get_sample()
         if sample is None:
             return None
-        return index_to_edge(sample, self.n)
+        return index_to_edge(sample[0], self.n)
 
     def add(self, another_graph_sketch):
         """
@@ -157,3 +166,24 @@ class GraphSketch:
             raise ValueError('graph sketch rows are not compatible')
 
         self.a[i].add(self.a[j])
+
+    def subtract_row(self, i, j):
+        """
+            Subtracts one row from another.
+
+        Time Complexity
+            O(log(n)**3)
+
+        :param i:
+        :type i:
+        :param j:
+        :type j:
+        :return:
+        :rtype:
+        """
+
+        if self.a[i].n != self.a[j].n or\
+           self.a[i].init_seed != self.a[j].init_seed:
+            raise ValueError('graph sketch rows are not compatible')
+
+        self.a[i].subtract(self.a[j])

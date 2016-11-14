@@ -1,6 +1,5 @@
 from tools.primality_test import get_next_prime
 from random import randint
-from tools.validation import check_type
 
 
 def pick_k_ind_hash_function(n, w, k):
@@ -30,14 +29,11 @@ def pick_k_ind_hash_function(n, w, k):
 
     """
 
-    check_type(n, int)
-    check_type(w, int)
-    check_type(k, int)
-
     p = get_next_prime(max(n, w))
 
     a = [randint(0, p - 1) for i in range(k)]
-    a[0] = randint(1, p - 1)
+    if a[0] == 0:
+        a[0] = randint(1, p - 1)
 
     def h(x):
         res = 0
