@@ -38,7 +38,7 @@ class GraphSketch:
         self.n = n
 
         self.init_seed = randint(0, 2147483647)
-        self.a = [L0Sampler(n*(n - 1) >> 1, self.init_seed) for i in range(n)]
+        self.a = tuple(L0Sampler(n*(n - 1) >> 1, self.init_seed) for i in range(n))
 
     def add_edge(self, e):
         """
@@ -52,9 +52,6 @@ class GraphSketch:
         :return:
         :rtype:
         """
-
-        check_in_range(0, self.n - 1, e.u)
-        check_in_range(0, self.n - 1, e.v)
 
         if e.u < e.v:
             self.a[e.u].update(edge_to_index(e, self.n), 1)
@@ -76,8 +73,6 @@ class GraphSketch:
         :rtype:
         """
 
-        check_type(edges, list)
-
         for e in edges:
             self.add_edge(e)
 
@@ -88,22 +83,34 @@ class GraphSketch:
         Time Complexity
             O(log(n)**3)
 
-        :param args:    Edge or list of edges to remove.
-        :type args:     Edge or list(Edge)
+        :param e:    Edge to remove
+        :type e:     Edge
         :return:
         :rtype:
         """
 
-        check_type(e, Edge)
-
-        check_in_range(0, self.n - 1, e.u)
-        check_in_range(0, self.n - 1, e.v)
         if e.u < e.v:
             self.a[e.u].update(edge_to_index(e, self.n), -1)
             self.a[e.v].update(edge_to_index(e, self.n), 1)
         else:
             self.a[e.u].update(edge_to_index(e, self.n), 1)
             self.a[e.v].update(edge_to_index(e, self.n), -1)
+
+    def remove_edges(self, edges):
+        """
+            Removes edges.
+
+        Time Complexity
+            O(log(n)**3) for every removed edge.
+
+        :param edges:    List of edges to remove.
+        :type edges:     list
+        :return:
+        :rtype:
+        """
+
+        for e in edges:
+            self.remove_edge(e)
 
     def sample_edge(self, u):
         """

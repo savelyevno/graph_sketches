@@ -53,7 +53,7 @@ class L0Sampler:
             random.seed(init_seed)
 
         self.n = n
-        self.levels = int(ceil(log2(n)))
+        self.levels = ceil(log2(n))
 
         self.eps = 1/100
         self.delta = 1/100
@@ -62,12 +62,12 @@ class L0Sampler:
         self.n_hash_power = 1
 
         # self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
-        self.sparse_degree = int(ceil(log(100))) << 1
+        self.sparse_degree = ceil(log(100)) << 1
         self.k = self.sparse_degree >> 1
 
         self.hash_function = pick_k_ind_hash_function(n, n ** self.n_hash_power, self.k)
 
-        self.recoverers = [SparseRecoverer(n, self.sparse_degree, self.delta) for i in range(self.levels)]
+        self.recoverers = tuple(SparseRecoverer(n, self.sparse_degree, self.delta) for i in range(self.levels))
         
     def update(self, i, Delta):
         """
@@ -136,6 +136,9 @@ class L0Sampler:
 
             if isinstance(recover_result, dict):
                 key = random.choice(list(recover_result.keys()))
+
+                # return key, recover_result[key]
+
                 result[key] = recover_result[key]
 
         if len(result) > 0:

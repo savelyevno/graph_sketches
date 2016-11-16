@@ -34,6 +34,9 @@ class SparseRecoverer:
             Society for Industrial and Applied Mathematics, 2013.
             https://pdfs.semanticscholar.org/b0f3/336c82b8a9d9a70d7cf187eea3f6dbfd1cdf.pdf
     """
+
+    # __slots__ = 'n', 'delta', 'sparse_degree', 'columns', 'rows', 'hash_function', 'R'
+
     def __init__(self, n, s, delta):
         """
             Initializes log(s/delta) rows and 2*s columns table and
@@ -57,9 +60,9 @@ class SparseRecoverer:
         self.columns = 2*s
         self.rows = int(log(s / delta))
 
-        self.hash_function = [pick_k_ind_hash_function(n, self.columns, 2) for i in range(self.rows)]
+        self.hash_function = tuple(pick_k_ind_hash_function(n, self.columns, 2) for i in range(self.rows))
 
-        self.R = [[OneSparseRecoverer(self.n) for j in range(self.columns)] for i in range(self.rows)]
+        self.R = tuple(tuple(OneSparseRecoverer(self.n) for j in range(self.columns)) for i in range(self.rows))
 
     def update(self, i, Delta):
         """
@@ -100,10 +103,10 @@ class SparseRecoverer:
                 if one_sparse_recovery_result is not None:
                     result[one_sparse_recovery_result[0]] = one_sparse_recovery_result[1]
 
-        if len(result) == 0:
-            return None
-        else:
+        if result:
             return result
+        else:
+            return None
 
     def _get_info(self):
         """

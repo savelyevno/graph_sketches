@@ -1,8 +1,7 @@
-from graph.GraphSketch import GraphSketch
-from spanning_forest_problem.DSU import DSU
+from spanning_forest.DSU import DSU
 
 
-def get_spanning_forest(n, graph_sketches):
+def get_spanning_forest(graph_sketches):
     """
         Returns sketch of spanning forest of some graph
         presented as its t = O(log(n)) independent sketches.
@@ -10,15 +9,17 @@ def get_spanning_forest(n, graph_sketches):
     Time Complexity:
         O(n*log(n)**4)
 
-    :param n:               Size of graph.
-    :type n:                int
+    Space Complexity:
+        O(n*log(n)**5)
+
     :param graph_sketches:  List of sketches.
     :type graph_sketches:   []
-    :return:                Sketch of resulting graph.
-    :rtype:                 GraphSketch
+    :return:                Edges of the spanning forest.
+    :rtype:                 list
     """
 
     t = len(graph_sketches)
+    n = graph_sketches[0].n
 
     dsu = DSU(n)
 
@@ -57,7 +58,4 @@ def get_spanning_forest(n, graph_sketches):
         if not_sampled_any_edge_in_a_row == 2:
             break
 
-    # result = GraphSketch(n)
-    # result.add_edges(sampled_edges)
-
-    return len(sampled_edges)
+    return sampled_edges

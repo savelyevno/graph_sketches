@@ -4,6 +4,10 @@ import numpy as np
 class DSU:
     """
         Disjoint set union data structure.
+
+    Space Complexity:
+        O(n)
+
     """
     def __init__(self, n):
         """

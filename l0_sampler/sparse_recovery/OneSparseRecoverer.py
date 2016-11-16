@@ -1,4 +1,4 @@
-from tools.primality_test import get_next_prime
+from tools.primality_test import prime_getter
 from random import randint
 
 
@@ -31,6 +31,9 @@ class OneSparseRecoverer:
             Society for Industrial and Applied Mathematics, 2013.
             https://pdfs.semanticscholar.org/b0f3/336c82b8a9d9a70d7cf187eea3f6dbfd1cdf.pdf
     """
+
+    __slots__ = 'n', 'p', 'z', 'iota', 'fi', 'tau'
+
     def __init__(self, n):
         """
 
@@ -43,7 +46,7 @@ class OneSparseRecoverer:
 
         self.n = n
 
-        self.p = get_next_prime(n*n)
+        self.p = prime_getter.get_next_prime(n*100)
 
         self.z = randint(1, self.p - 1)
 
@@ -128,3 +131,6 @@ class OneSparseRecoverer:
         self.iota -= another_one_sparse_recoverer.iota
         self.fi -= another_one_sparse_recoverer.fi
         self.tau = (self.tau - another_one_sparse_recoverer.tau) % self.p
+
+    def __str__(self):
+        return ", ".join(map(str, [self.n, self.p, self.z, self.iota, self.fi, self.tau]))
