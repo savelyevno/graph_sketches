@@ -1,9 +1,9 @@
 import random
 from math import log, log2, ceil
 
-from l0_sampler.sparse_recovery.SparseRecoverer import SparseRecoverer
+from l0_sampler.sparse_recovery.SparseRecoverer_without_inner_objects import SparseRecoverer
+# from l0_sampler.sparse_recovery.SparseRecoverer import SparseRecoverer
 from tools.hash_function import pick_k_ind_hash_function
-from tools.validation import check_in_range, check_type
 
 
 class L0Sampler:
@@ -55,14 +55,15 @@ class L0Sampler:
         self.n = n
         self.levels = ceil(log2(n))
 
-        self.eps = 1/100
-        self.delta = 1/100
+        k = 10
+        self.eps = 1/k
+        self.delta = 1/k
 
         # for more accurate distribution among levels one may want to increase this value
         self.n_hash_power = 1
 
         # self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
-        self.sparse_degree = ceil(log(100)) << 1
+        self.sparse_degree = int(2*log(k))
         self.k = self.sparse_degree >> 1
 
         self.hash_function = pick_k_ind_hash_function(n, n ** self.n_hash_power, self.k)

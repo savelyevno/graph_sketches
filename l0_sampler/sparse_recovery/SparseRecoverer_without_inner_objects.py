@@ -1,7 +1,9 @@
 from math import log
+from random import randint
 
-from l0_sampler.sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
 from tools.hash_function import pick_k_ind_hash_function
+from tools.primality_test import prime_getter
+
 
 
 class SparseRecoverer:
@@ -34,7 +36,7 @@ class SparseRecoverer:
             https://pdfs.semanticscholar.org/b0f3/336c82b8a9d9a70d7cf187eea3f6dbfd1cdf.pdf
     """
 
-    # __slots__ = 'n', 'delta', 'sparse_degree', 'columns', 'rows', 'hash_function', 'R'
+    __slots__ = 'n', 'delta', 'sparse_degree', 'columns', 'rows', 'hash_function', 'R', 'p'
 
     def __init__(self, n, s, delta):
         """
@@ -61,7 +63,10 @@ class SparseRecoverer:
 
         self.hash_function = tuple(pick_k_ind_hash_function(n, self.columns, 2) for i in range(self.rows))
 
-        self.R = tuple(tuple(OneSparseRecoverer(self.n) for j in range(self.columns)) for i in range(self.rows))
+        self.p = prime_getter.get_next_prime(n*100)
+
+        # R[i][j] = [z, iota, fi, tau]
+        self.R = tuple(tuple([randint(1, self.p - 1), 0, 0, 0] for j in range(self.columns)) for i in range(self.rows))
 
     def update(self, i, Delta):
         """
@@ -79,7 +84,10 @@ class SparseRecoverer:
         """
 
         for l in range(self.rows):
-            self.R[l][self.hash_function[l](i)].update(i, Delta)
+            recoverer = self.R[l][self.hash_function[l](i)]
+            recoverer[1] += (i + 1)*Delta
+            recoverer[2] += Delta
+            recoverer[3] = (recoverer[3] + Delta * pow(recoverer[0], i + 1, self.p)) % self.p
 
     def recover(self):
         """
@@ -97,10 +105,16 @@ class SparseRecoverer:
         result = {}
         for i in range(self.rows):
             for j in range(self.columns):
-                one_sparse_recovery_result = self.R[i][j].recover()
+                recoverer = self.R[i][j]
+                z = recoverer[0]
+                iota = recoverer[1]
+                fi = recoverer[2]
+                tau = recoverer[3]
 
-                if one_sparse_recovery_result is not None:
-                    result[one_sparse_recovery_result[0]] = one_sparse_recovery_result[1]
+                if fi != 0 and\
+                   iota % fi == 0 and iota // fi > 0 and \
+                   tau == fi * pow(z, iota // fi, self.p) % self.p:
+                    result[iota // fi - 1] = fi
 
         if result:
             return result
@@ -138,12 +152,21 @@ class SparseRecoverer:
 
         if self.n != another_s_sparse_recoverer.n or\
            self.sparse_degree != another_s_sparse_recoverer.sparse_degree or\
-           self.delta != another_s_sparse_recoverer.delta:
+           self.delta != another_s_sparse_recoverer.delta or\
+           self.p != another_s_sparse_recoverer.p:
             raise ValueError('s-sparse recoverers are not compatible')
         else:
             for i in range(self.rows):
                 for j in range(self.columns):
-                    self.R[i][j].add(another_s_sparse_recoverer.R[i][j])
+                    recoverer = self.R[i][j]
+                    another_recoverer = another_s_sparse_recoverer.R[i][j]
+
+                    if recoverer[0] != another_recoverer[0]:
+                        raise ValueError('1-sparse recoverers are not compatible')
+
+                    recoverer[1] += another_recoverer[1]
+                    recoverer[2] += another_recoverer[2]
+                    recoverer[3] = (recoverer[3] + another_recoverer[3]) % self.p
 
     def subtract(self, another_s_sparse_recoverer):
         """
@@ -160,11 +183,20 @@ class SparseRecoverer:
         :rtype:
         """
 
-        if self.n != another_s_sparse_recoverer.n or\
-           self.sparse_degree != another_s_sparse_recoverer.sparse_degree or\
-           self.delta != another_s_sparse_recoverer.delta:
+        if self.n != another_s_sparse_recoverer.n or \
+           self.sparse_degree != another_s_sparse_recoverer.sparse_degree or \
+           self.delta != another_s_sparse_recoverer.delta or \
+           self.p != another_s_sparse_recoverer.p:
             raise ValueError('s-sparse recoverers are not compatible')
         else:
             for i in range(self.rows):
                 for j in range(self.columns):
-                    self.R[i][j].subtract(another_s_sparse_recoverer.R[i][j])
+                    recoverer = self.R[i][j]
+                    another_recoverer = another_s_sparse_recoverer.R[i][j]
+
+                    if recoverer[0] != another_recoverer[0]:
+                        raise ValueError('1-sparse recoverers are not compatible')
+
+                    recoverer[1] -= another_recoverer[1]
+                    recoverer[2] -= another_recoverer[2]
+                    recoverer[3] = (recoverer[3] - another_recoverer[3]) % self.p

@@ -1,6 +1,6 @@
 import random
 
-from graph.tools import Edge
+from graph_representation.tools import Edge
 
 
 def build_g(E, n):

@@ -1,11 +1,8 @@
-from math import log2, ceil
 import random
 
-from edge_connectivity.k_edge_connect import k_edge_connect
-from tools.graph_generation import generate_graph
+from graph_algorithms.KEdgeConnectAlgorithm import KEdgeConnectAlgorithm
 from tools.Timer import Timer
-from graph.GraphSketch import GraphSketch
-
+from tools.graph_generation import generate_graph
 
 timer = Timer()
 
@@ -15,21 +12,15 @@ def test1(n, p, k):
     E, g = generate_graph(n, p)
 
     timer.start()
-
-    t = ceil(log2(n))
-    sketches = []
-    for i in range(k):
-        sketches.append([])
-        for j in range(t):
-            sketch = GraphSketch(n)
-            sketch.add_edges(E)
-            sketches[i].append(sketch)
-
+    k_edge_connect_alg = KEdgeConnectAlgorithm(n, k)
     print('init time', timer.stop())
+
     timer.start()
+    k_edge_connect_alg.add_edges(E)
+    print('add time', timer.stop())
 
-    sketch, sp_forest = k_edge_connect(sketches)
-
+    timer.start()
+    sp_forest = k_edge_connect_alg.solve(0)
     print('solve time', timer.stop())
 
     # print(E)
@@ -39,4 +30,4 @@ def test1(n, p, k):
         print(len(sp))
 
 
-test1(50, 0.2, 2)
+test1(200, 0.2, 3)

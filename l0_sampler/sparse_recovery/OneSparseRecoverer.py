@@ -105,6 +105,8 @@ class OneSparseRecoverer:
 
         if self.z != another_one_sparse_recoverer.z or self.p != another_one_sparse_recoverer.p or\
            self.n != another_one_sparse_recoverer.n:
+            print(self)
+            print(another_one_sparse_recoverer)
             raise ValueError('1-sparse recoverers are not compatible')
 
         self.iota += another_one_sparse_recoverer.iota

@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class DSU:
     """
         Disjoint set union data structure.

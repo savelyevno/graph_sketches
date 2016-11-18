@@ -2,7 +2,7 @@ from random import randint
 
 from l0_sampler.L0Sampler import L0Sampler
 from tools.validation import check_type, check_in_range
-from graph.tools import Edge, edge_to_index, index_to_edge
+from graph_representation.tools import Edge, edge_to_index, index_to_edge
 
 
 class GraphSketch:
@@ -31,7 +31,7 @@ class GraphSketch:
         Time Complexity
             O(n*log(n)**7)
 
-        :param n:   Maximal size of a graph.
+        :param n:   Maximal size of a graph_representation.
         :type n:    int
         """
 
@@ -140,7 +140,7 @@ class GraphSketch:
         Time Complexity
             O(n*log(n)**3)
 
-        :param another_graph_sketch:    Sketch of another graph.
+        :param another_graph_sketch:    Sketch of another graph_representation.
         :type another_graph_sketch:     GraphSketch
         :return:
         :rtype:
@@ -148,14 +148,14 @@ class GraphSketch:
 
         if self.n != another_graph_sketch.n or\
            self.init_seed != another_graph_sketch.init_seed:
-            raise ValueError('graph sketches are not compatible')
+            raise ValueError('graph_representation sketches are not compatible')
 
         for i in range(self.n):
             self.a[i].add(another_graph_sketch.a[i])
 
     def add_row(self, i, j):
         """
-            Adds two graph sketch rows together.
+            Adds two graph_representation sketch rows together.
 
         Time Complexity
             O(log(n)**3)
@@ -170,7 +170,7 @@ class GraphSketch:
 
         if self.a[i].n != self.a[j].n or\
            self.a[i].init_seed != self.a[j].init_seed:
-            raise ValueError('graph sketch rows are not compatible')
+            raise ValueError('graph_representation sketch rows are not compatible')
 
         self.a[i].add(self.a[j])
 
@@ -191,6 +191,23 @@ class GraphSketch:
 
         if self.a[i].n != self.a[j].n or\
            self.a[i].init_seed != self.a[j].init_seed:
-            raise ValueError('graph sketch rows are not compatible')
+            raise ValueError('graph_representation sketch rows are not compatible')
 
         self.a[i].subtract(self.a[j])
+
+
+def add_edge_to_graph_sketch_matrix(graph_sketch_matrix, e):
+    """
+        Adds an edge to matrix consisting of graph sketches.
+
+    :param graph_sketch_matrix: Matrix of graph sketches.
+    :type graph_sketch_matrix:  list
+    :param e:                   Edge to add.
+    :type e:                    Edge
+    :return:
+    :rtype:
+    """
+
+    for line in graph_sketch_matrix:
+        for graph_sketch in line:
+            graph_sketch.add_edge(e)
