@@ -18,7 +18,7 @@ def test(n, p, eps):
 
     timer.start()
     min_cut_alg.add_edges(E)
-    print('add time', timer.stop())
+    print('add time', len(E), timer.stop())
 
     timer.start()
     min_cut_value = min_cut_alg.solve()
@@ -27,4 +27,4 @@ def test(n, p, eps):
     print('min cut:', min_cut_value)
 
 
-test(50, 0.5, 1)
+test(100, 0.5, 1)

@@ -44,17 +44,17 @@ def test2(p, n, print_log=False):
 
     E, g = generate_graph(n, p)
 
-    print('gen time', timer.stop())
+    # print('gen time', timer.stop())
 
-    print('edges: ', len(E))
+    # print('edges: ', len(E), E)
 
     timer.start()
     sp_forest_alg = SpanningForestAlgorithm(n)
-    print('total build time', timer.stop())
+    # print('total build time', timer.stop())
 
     timer.start()
     sp_forest_alg.add_edges(E)
-    print('edges add time', timer.stop())
+    # print('edges add time', timer.stop())
 
     timer.start()
     span_size = len(sp_forest_alg.solve())
@@ -65,7 +65,7 @@ def test2(p, n, print_log=False):
         # print(cc)
         # print(span_size)
         print(span_size == n - cc)
-    print('solving time', timer.stop())
+    # print('solving time', timer.stop())
 
     return span_size == n - cc
 
@@ -73,11 +73,12 @@ def test2(p, n, print_log=False):
 def test3(n):
     random.seed(0)
 
-    T = 1
+    T = 1000
     for test in range(0, T):
 
         timer.start()
-        if not test2(0.5, n, False):
+        result = test2(0.5, n, False)
+        if not result:
             print(test, 'Fail', timer.stop())
         else:
             print(test, 'Ok', timer.stop())
@@ -93,10 +94,12 @@ def test4(n):
     sp_forest_alg = SpanningForestAlgorithm(n)
     print('init time:', timer.stop())
 
-    p = 0.75
+    p = 0.9
 
     E = set()
     g = build_g([], n)
+
+    random.seed(0)
     while True:
         changed = False
         if random.random() < p:
@@ -133,7 +136,7 @@ def test4(n):
 
             # print('removed edge', e)
 
-        if changed:
+        if changed and random.randint(0, 20) == 0:
             timer.start()
             cc = count_cc(g, n)
             # print('naive cc count time', timer.stop())
@@ -163,4 +166,5 @@ def test5(n):
     print(timer.stop())
 
 
-test3(400)
+# test1()
+test3(50)

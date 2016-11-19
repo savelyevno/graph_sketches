@@ -42,3 +42,26 @@ def pick_k_ind_hash_function(n, w, k):
         return res % w
 
     return h
+
+
+def run_hash_function(a, p, w, x):
+    """
+
+    :param a:
+    :type a:
+    :param p:
+    :type p:
+    :param w:
+    :type w:
+    :param x:
+    :type x:
+    :return:
+    :rtype:
+    """
+
+    res = 0
+    pow_x = 1
+    for i in range(len(a)):
+        res = (res + pow_x * a[i]) % p
+        pow_x = (pow_x * x) % p
+    return res % w

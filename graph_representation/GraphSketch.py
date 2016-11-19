@@ -1,6 +1,6 @@
 from random import randint
 
-from l0_sampler.L0Sampler import L0Sampler
+from l0_sampler_fast_and_ugly.L0Sampler import L0Sampler
 from tools.validation import check_type, check_in_range
 from graph_representation.tools import Edge, edge_to_index, index_to_edge
 

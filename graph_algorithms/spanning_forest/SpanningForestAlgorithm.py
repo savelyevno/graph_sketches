@@ -86,10 +86,8 @@ class SpanningForestAlgorithm:
         dsu = DSU(self.n)
     
         sampled_edges = []
-    
-        not_sampled_any_edge_in_a_row = 0
+
         for r in range(self.t):
-            sampled_any_edge = False
     
             for old_leader in list(dsu.leaders):
     
@@ -105,19 +103,12 @@ class SpanningForestAlgorithm:
                     if leader != member:
                         self.graph_sketches[r].subtract_row(leader, member)
     
-                if sampled_edge is not None:
+                if sampled_edge is not None and\
+                   0 <= sampled_edge.u < self.n and\
+                   0 <= sampled_edge.v < self.n:
                     sampled_edges.append(sampled_edge)
     
-                    dsu.unite(leader, sampled_edge[0])
-                    dsu.unite(leader, sampled_edge[1])
-    
-                    sampled_any_edge = True
-    
-            if not sampled_any_edge:
-                not_sampled_any_edge_in_a_row += 1
-            else:
-                not_sampled_any_edge_in_a_row = 0
-            if not_sampled_any_edge_in_a_row == 2:
-                break
+                    dsu.unite(leader, sampled_edge.u)
+                    dsu.unite(leader, sampled_edge.v)
     
         return sampled_edges
