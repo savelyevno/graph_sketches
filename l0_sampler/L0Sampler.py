@@ -1,7 +1,7 @@
 import random
 from math import log, log2, ceil
 
-from l0_sampler_fast_and_ugly.SparseRecoverer import SparseRecoverer
+from l0_sampler.SparseRecoverer_fast import SparseRecoverer
 from tools.hash_function import pick_k_ind_hash_function
 
 

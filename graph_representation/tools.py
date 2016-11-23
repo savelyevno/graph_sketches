@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import lru_cache
 
 Edge = namedtuple('Edge', ['u', 'v'])
 
@@ -24,6 +25,7 @@ def edge_to_index(e, n):
     return e.u * (n - 1) - (e.u * (e.u + 1)) // 2 + e.v - 1
 
 
+# @lru_cache()
 def index_to_edge(i, n):
     """
         Gets edge (u, v) from index of its position in edge array.
@@ -43,10 +45,10 @@ def index_to_edge(i, n):
         return Edge(0, i + 1)
 
     def f(u):
-        return i // (n * u - (u * (u + 1)) // 2) < 1
+        return i // (n * u - ((u * (u + 1)) >> 1)) < 1
 
     u = binary_search(1, n, f)
-    return Edge(u, i - (n * u - (u * (u + 1)) // 2 - u - 1))
+    return Edge(u, i - (n * u - ((u * (u + 1)) >> 1) - u - 1))
 
 
 def binary_search(l, r, f):

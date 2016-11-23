@@ -6,6 +6,7 @@ from graph_representation.tools import Edge
 from graph_algorithms.spanning_forest.SpanningForestAlgorithm import SpanningForestAlgorithm
 from tools.Timer import Timer
 from tools.graph_generation import build_g, count_cc, generate_graph
+from tools.primality_test import prime_getter
 
 timer = Timer()
 
@@ -44,19 +45,25 @@ def test2(p, n, print_log=False):
 
     E, g = generate_graph(n, p)
 
-    # print('gen time', timer.stop())
+    if print_log:
+        print('gen time', timer.stop())
 
-    # print('edges: ', len(E), E)
+        print('edges: ', len(E))
 
-    timer.start()
+    if print_log:
+        timer.start()
     sp_forest_alg = SpanningForestAlgorithm(n)
-    # print('total build time', timer.stop())
+    if print_log:
+        print('total build time', timer.stop())
 
-    timer.start()
+    if print_log:
+        timer.start()
     sp_forest_alg.add_edges(E)
-    # print('edges add time', timer.stop())
+    if print_log:
+        print('edges add time', timer.stop())
 
-    timer.start()
+    if print_log:
+        timer.start()
     span_size = len(sp_forest_alg.solve())
 
     cc = count_cc(g, n)
@@ -65,7 +72,7 @@ def test2(p, n, print_log=False):
         # print(cc)
         # print(span_size)
         print(span_size == n - cc)
-    # print('solving time', timer.stop())
+        print('solving time', timer.stop())
 
     return span_size == n - cc
 
@@ -73,11 +80,11 @@ def test2(p, n, print_log=False):
 def test3(n):
     random.seed(0)
 
-    T = 1000
+    T = 1
     for test in range(0, T):
 
         timer.start()
-        result = test2(0.5, n, False)
+        result = test2(0.1, n, True)
         if not result:
             print(test, 'Fail', timer.stop())
         else:
@@ -88,8 +95,6 @@ def test3(n):
 def test4(n):
     random.seed(0)
 
-    t = int(ceil(log2(n)))
-
     timer.start()
     sp_forest_alg = SpanningForestAlgorithm(n)
     print('init time:', timer.stop())
@@ -98,48 +103,37 @@ def test4(n):
 
     E = set()
     g = build_g([], n)
+    E_inv = set()
+    for i in range(n):
+        for j in range(i + 1, n):
+            E_inv.add(Edge(i, j))
 
     random.seed(0)
     while True:
-        changed = False
         if random.random() < p:
-            i = random.randint(0, n - 1)
-            j = random.randint(0, n - 1)
-            while j == i:
-                j = random.randint(0, n - 1)
-            e = Edge(min(i, j), max(i, j))
+            e = random.sample(E_inv, 1)[0]
 
-            if e not in E:
-                changed = True
-                E.add(e)
-                g[e.u].add(e.v)
-                g[e.v].add(e.u)
-
-                timer.start()
-                for i in range(t):
-                    sp_forest_alg.add_edge(e)
-                # print('add edge time', timer.stop())
-
-                # print('added edge', e)
+            E.add(e)
+            E_inv.remove(e)
+            g[e.u].add(e.v)
+            g[e.v].add(e.u)
+            timer.start()
+            sp_forest_alg.add_edge(e)
         elif len(E) > 0:
-            changed = True
             e = random.sample(E, 1)[0]
 
+            E_inv.add(e)
             E.remove(e)
             g[e.u].remove(e.v)
             g[e.v].remove(e.u)
 
             timer.start()
-            for i in range(t):
-                sp_forest_alg.remove_edge(e)
-            # print('rem edge time', timer.stop())
+            sp_forest_alg.remove_edge(e)
 
-            # print('removed edge', e)
-
-        if changed and random.randint(0, 20) == 0:
+        if random.randint(0, 100) == 0:
             timer.start()
             cc = count_cc(g, n)
-            # print('naive cc count time', timer.stop())
+            print('naive cc count time', timer.stop())
 
             timer.start()
             span_size = len(sp_forest_alg.solve())
@@ -154,17 +148,41 @@ def test4(n):
 
 
 def test5(n):
+    random.seed(0)
 
     timer.start()
+    sp_forest_alg = SpanningForestAlgorithm(n)
+    print('init time:', timer.stop())
 
-    sketch = GraphSketch(n)
+    p = 0.9
 
-    print(timer.stop())
+    random.seed(0)
+    edge_cnt = 0
+    while True:
+        if random.random() < p:
+            u = random.randint(0, n - 1)
+            v = random.randint(0, n - 1)
+            while u == v:
+                v = random.randint(0, n - 1)
 
-    timer.start()
-    sketch.sample_edge(0)
-    print(timer.stop())
+            e = Edge(u, v)
+
+            sp_forest_alg.add_edge(e)
+
+            edge_cnt += 1
+        else:
+            e = sp_forest_alg.graph_sketches[0].sample_edge()
+
+            if e is not None:
+                sp_forest_alg.remove_edge(e)
+
+                edge_cnt -= 1
+
+        if random.randint(0, 100) == 0:
+            timer.start()
+            sp_forest_alg.solve()
+            print('build span tree time', timer.stop(), 'edge count', edge_cnt)
 
 
 # test1()
-test3(50)
+test5(10000)

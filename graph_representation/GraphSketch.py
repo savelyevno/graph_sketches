@@ -1,6 +1,6 @@
-from random import randint
+from random import randint, getrandbits
 
-from l0_sampler_fast_and_ugly.L0Sampler import L0Sampler
+from l0_sampler_fast.L0Sampler import L0Sampler
 from tools.validation import check_type, check_in_range
 from graph_representation.tools import Edge, edge_to_index, index_to_edge
 
@@ -37,12 +37,12 @@ class GraphSketch:
 
         self.n = n
 
-        self.init_seed = randint(0, 2147483647)
+        self.init_seed = getrandbits(32)
         self.a = tuple(L0Sampler(n*(n - 1) >> 1, self.init_seed) for i in range(n))
 
     def add_edge(self, e):
         """
-               Adds edge.
+               Adds an edge.
 
         Time Complexity
             O(log(n)**3)
@@ -112,7 +112,29 @@ class GraphSketch:
         for e in edges:
             self.remove_edge(e)
 
-    def sample_edge(self, u):
+    def sample_edge(self):
+        """
+            Samples random edge.
+
+        Time Complexity
+            O(log(n)**4)
+
+        :return:    Some edge of the graph.
+        :rtype:     Edge or None
+        """
+
+        cnt = 0
+        res = None
+        for u in range(self.n):
+            e = self.sample_neighbour_edge(u)
+
+            if e is not None and randint(0, cnt) == 0:
+                res = e
+                cnt += 1
+
+        return res
+
+    def sample_neighbour_edge(self, u):
         """
             Samples random neighbour of vertex u.
 
@@ -125,7 +147,6 @@ class GraphSketch:
         :rtype:     Edge or None
         """
 
-        check_type(u, int)
         check_in_range(0, self.n - 1, u)
 
         sample = self.a[u].get_sample()
@@ -194,20 +215,3 @@ class GraphSketch:
             raise ValueError('graph_representation sketch rows are not compatible')
 
         self.a[i].subtract(self.a[j])
-
-
-def add_edge_to_graph_sketch_matrix(graph_sketch_matrix, e):
-    """
-        Adds an edge to matrix consisting of graph sketches.
-
-    :param graph_sketch_matrix: Matrix of graph sketches.
-    :type graph_sketch_matrix:  list
-    :param e:                   Edge to add.
-    :type e:                    Edge
-    :return:
-    :rtype:
-    """
-
-    for line in graph_sketch_matrix:
-        for graph_sketch in line:
-            graph_sketch.add_edge(e)

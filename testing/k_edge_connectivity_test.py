@@ -30,4 +30,4 @@ def test1(n, p, k):
         print(len(sp))
 
 
-test1(300, 0.1, 10)
+test1(200, 0.1, 10)
