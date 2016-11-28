@@ -1,7 +1,7 @@
 from collections import namedtuple
-from functools import lru_cache
 
 Edge = namedtuple('Edge', ['u', 'v'])
+WEdge = namedtuple('WEdge', ['u', 'v', 'w'])
 
 
 def edge_to_index(e, n):

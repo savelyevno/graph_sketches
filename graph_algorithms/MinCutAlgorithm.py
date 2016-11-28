@@ -81,6 +81,6 @@ class MinCutAlgorithm:
         i = -1
         while i + 1 < self.levels and result >= self.k:
             i += 1
-            result = self.k_edge_connect_instances[i].solve(2)
+            result = self.k_edge_connect_instances[i].get_sp_forest_edges(2)
 
         return result << i

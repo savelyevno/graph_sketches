@@ -85,7 +85,7 @@ class KEdgeConnectAlgorithm:
         spanning_forest_array = []
 
         for i in range(self.k):
-            spanning_forest_array.append(self.span_forest_instances[i].solve())
+            spanning_forest_array.append(self.span_forest_instances[i].get_sp_forest_edges())
 
             for j in range(i + 1, self.k):
                 self.span_forest_instances[j].remove_edges(spanning_forest_array[i])

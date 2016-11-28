@@ -92,8 +92,7 @@ class L0Sampler:
         """
 
         random.seed((level*self.n_sq + row*self.n + column) ^ self.init_seed)
-        result = random.randint(1, self.one_sp_rec_p - 1)
-        return result
+        return random.randint(1, self.one_sp_rec_p - 1)
 
     def get_recoverers_column_hash_params(self, level, row):
         """
@@ -197,6 +196,40 @@ class L0Sampler:
                         if random.randint(0, result_count) == 0:
                             result = iota // fi - 1, fi
                             result_count += 1
+
+        return result
+
+    def get_samples(self):
+        """
+            Get l0-samples.
+
+            Time Complexity
+                O(log(n)**4)
+
+        :return:    Return dic of tuples (i, a_i).
+        :rtype:     dict
+        """
+
+        result = {}
+
+        for level in range(self.levels):
+            for row in range(self.recoverers_rows):
+                if (level, row) not in self.recoverers_column_hash_params:
+                    continue
+                for column in range(self.recoverers_columns):
+                    if (level, row, column) not in self.recoverers_values:
+                        continue
+
+                    recoverer = self.recoverers_values[(level, row, column)]
+
+                    z = recoverer[0]
+                    iota = recoverer[1]
+                    fi = recoverer[2]
+                    tau = recoverer[3]
+
+                    if fi != 0 and iota % fi == 0 and iota // fi > 0 and \
+                            tau == fi * pow(z, iota // fi, self.one_sp_rec_p) % self.one_sp_rec_p:
+                        result[iota // fi - 1] = fi
 
         return result
 

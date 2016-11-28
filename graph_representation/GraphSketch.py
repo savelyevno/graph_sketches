@@ -2,7 +2,7 @@ from random import randint, getrandbits
 
 from l0_sampler_fast.L0Sampler import L0Sampler
 from tools.validation import check_type, check_in_range
-from graph_representation.tools import Edge, edge_to_index, index_to_edge
+from graph_representation.tools import Edge, WEdge, edge_to_index, index_to_edge
 
 
 class GraphSketch:
@@ -48,17 +48,26 @@ class GraphSketch:
             O(log(n)**3)
 
         :param e:   Edge to add.
-        :type e:    Edge
+        :type e:    Edge or WEdge
         :return:
         :rtype:
         """
 
-        if e.u < e.v:
-            self.a[e.u].update(edge_to_index(e, self.n), 1)
-            self.a[e.v].update(edge_to_index(e, self.n), -1)
-        else:
-            self.a[e.u].update(edge_to_index(e, self.n), -1)
-            self.a[e.v].update(edge_to_index(e, self.n), 1)
+        if isinstance(e, Edge):
+            if e.u < e.v:
+                self.a[e.u].update(edge_to_index(e, self.n), 1)
+                self.a[e.v].update(edge_to_index(e, self.n), -1)
+            else:
+                self.a[e.u].update(edge_to_index(e, self.n), -1)
+                self.a[e.v].update(edge_to_index(e, self.n), 1)
+
+        if isinstance(e, WEdge):
+            if e.u < e.v:
+                self.a[e.u].update(edge_to_index(e, self.n), e.w)
+                self.a[e.v].update(edge_to_index(e, self.n), -e.w)
+            else:
+                self.a[e.u].update(edge_to_index(e, self.n), -e.w)
+                self.a[e.v].update(edge_to_index(e, self.n), e.w)
 
     def add_edges(self, edges):
         """
@@ -126,7 +135,7 @@ class GraphSketch:
         cnt = 0
         res = None
         for u in range(self.n):
-            e = self.sample_neighbour_edge(u)
+            e = self.sample_neighbouring_edge(u)
 
             if e is not None and randint(0, cnt) == 0:
                 res = e
@@ -134,7 +143,7 @@ class GraphSketch:
 
         return res
 
-    def sample_neighbour_edge(self, u):
+    def sample_neighbouring_edge(self, u):
         """
             Samples random neighbour of vertex u.
 
@@ -153,6 +162,31 @@ class GraphSketch:
         if sample is None:
             return None
         return index_to_edge(sample[0], self.n)
+
+    def sample_neighbouring_weighted_edges(self, u):
+        """
+            Samples all possible neighbouring edges of u with there weights.
+
+        Time Complexity
+            O(log(n)**4)
+
+        :param u:   Vertex which neighbour we need to sample.
+        :type u:    int
+        :return:    Set of weighted edges.
+        :rtype:     set
+        """
+
+        check_in_range(0, self.n - 1, u)
+
+        sample = self.a[u].get_samples()
+
+        result = set()
+
+        for i, a_i in sample.items():
+            regular_edge = index_to_edge(i, self.n)
+            result.add(WEdge(regular_edge.u, regular_edge.v, a_i))
+
+        return result
 
     def add(self, another_graph_sketch):
         """

@@ -29,7 +29,7 @@ def test1():
     print('total build time', timer.stop())
     timer.start()
 
-    span_for = sp_forest_alg.solve()
+    span_for = sp_forest_alg.get_sp_forest_edges()
 
     g = build_g(E, n)
     cc = count_cc(g, n)
@@ -64,7 +64,7 @@ def test2(p, n, print_log=False):
 
     if print_log:
         timer.start()
-    span_size = len(sp_forest_alg.solve())
+    span_size = len(sp_forest_alg.get_sp_forest_edges())
 
     cc = count_cc(g, n)
 
@@ -136,7 +136,7 @@ def test4(n):
             print('naive cc count time', timer.stop())
 
             timer.start()
-            span_size = len(sp_forest_alg.solve())
+            span_size = len(sp_forest_alg.get_sp_forest_edges())
             print('build span tree time', timer.stop())
 
             if span_size != n - cc:
@@ -180,9 +180,9 @@ def test5(n):
 
         if random.randint(0, 100) == 0:
             timer.start()
-            sp_forest_alg.solve()
+            sp_forest_alg.get_sp_forest_edges()
             print('build span tree time', timer.stop(), 'edge count', edge_cnt)
 
 
 # test1()
-test5(10000)
+test3(1000)

@@ -1,6 +1,6 @@
 import random
 
-from graph_representation.tools import Edge
+from graph_representation.tools import Edge, WEdge
 
 
 def build_g(E, n):
@@ -38,5 +38,25 @@ def generate_graph(n, p):
                 E.append(Edge(i, j))
 
     g = build_g(E, n)
+
+    return E, g
+
+
+def build_weighted_g(E, n):
+    g = [set() for i in range(n)]
+    for e in E:
+        g[e.u].add(e)
+        g[e.v].add(WEdge(e.v, e.u, e.w))
+    return g
+
+
+def generate_weighted_graph(n, p, gen_weight_fun):
+    E = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            if random.random() < p:
+                E.append(WEdge(i, j, gen_weight_fun()))
+
+    g = build_weighted_g(E, n)
 
     return E, g
