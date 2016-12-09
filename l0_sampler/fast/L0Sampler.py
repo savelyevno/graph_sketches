@@ -1,7 +1,7 @@
 import random
 from math import log, log2, ceil
 
-from tools.hash_function import pick_k_ind_hash_function, hash_tuple, hash_int, run_hash_function
+from tools.hash_function import pick_k_ind_hash_function
 from tools.primality_test import prime_getter
 
 
@@ -29,7 +29,12 @@ class L0Sampler:
             Cormode, Graham, and Donatella Firmani. "On unifying the space of l0-sampling algorithms."
             https://pdfs.semanticscholar.org/b0f3/336c82b8a9d9a70d7cf187eea3f6dbfd1cdf.pdf
     """
-    def __init__(self, n, init_seed=-1):
+
+    __slots__ = 'init_seed', 'n_hash_power', 'n', 'n_sq', 'levels', 'eps', 'delta', 'sparse_degree', 'k',\
+                'hash_function', 'delta_r', 'recoverers_values', 'recoverers_values_tmp', 'recoverers_rows',\
+                'recoverers_columns', 'recoverers_column_hash_params', 'prime_after_n', 'one_sp_rec_p', 'levels_count'
+
+    def __init__(self, n, param=50000, init_seed=-1):
         """
 
         Time Complexity:
@@ -45,27 +50,30 @@ class L0Sampler:
         random.seed(init_seed)
         self.init_seed = init_seed
 
+        # for more accurate distribution among levels one may want to increase this value
+        self.n_hash_power = 1
+
         self.n = n
         self.n_sq = n*n
         self.levels = ceil(log2(n))
 
-        k = 10
-        self.eps = 1/k
-        self.delta = 1/k
+        # c = 1000
+        # param = 100*c
+        self.eps = 1/param
+        self.delta = 1/param
 
-        # for more accurate distribution among levels one may want to increase this value
-        self.n_hash_power = 1
-
-        # self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
-        self.sparse_degree = int(2*log(k))
+        self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
+        # self.sparse_degree = int(2*log(param))
         self.k = self.sparse_degree >> 1
+        # self.k = 10
 
         self.hash_function = pick_k_ind_hash_function(n, n ** self.n_hash_power, self.k)
 
         # s-sparse recoverers initialization
+        self.delta_r = self.delta
         self.recoverers_values = {}
         self.recoverers_values_tmp = {}
-        self.recoverers_rows = int(log(self.sparse_degree / self.delta))
+        self.recoverers_rows = int(log(self.sparse_degree / self.delta_r))
         self.recoverers_columns = 2 * self.sparse_degree
 
         # parameters to hash function that hashes update index into some column
@@ -76,6 +84,8 @@ class L0Sampler:
 
         # prime for ring Z_p from which we choose z in 1-sparse recoverers
         self.one_sp_rec_p = prime_getter.get_next_prime(n*100)
+
+        self.levels_count = [0 for i in range(self.levels)]
 
     def get_one_sp_rec_z(self, level, row, column):
         """
@@ -142,9 +152,10 @@ class L0Sampler:
         """
 
         hash_value = self.hash_function(i)
-        n_copy = self.n ** self.n_hash_power
+        n_copy = self.n ** self.n_hash_power - 1
         max_l = 0
-        while n_copy > hash_value:
+        while n_copy >= hash_value and max_l < self.levels:
+            self.levels_count[max_l] += 1
             max_l += 1
             n_copy >>= 1
 
@@ -173,31 +184,14 @@ class L0Sampler:
         :rtype:     None or (int, int)
         """
 
-        result_count = 0
-        result = None
+        samples = self.get_samples()
+        if len(samples) == 0:
+            return None
+        else:
+            i = random.choice(list(samples.keys()))
+            val = samples[i]
 
-        for level in range(self.levels):
-            for row in range(self.recoverers_rows):
-                if (level, row) not in self.recoverers_column_hash_params:
-                    continue
-                for column in range(self.recoverers_columns):
-                    if (level, row, column) not in self.recoverers_values:
-                        continue
-
-                    recoverer = self.recoverers_values[(level, row, column)]
-
-                    z = recoverer[0]
-                    iota = recoverer[1]
-                    fi = recoverer[2]
-                    tau = recoverer[3]
-
-                    if fi != 0 and iota % fi == 0 and iota // fi > 0 and \
-                            tau == fi * pow(z, iota // fi, self.one_sp_rec_p) % self.one_sp_rec_p:
-                        if random.randint(0, result_count) == 0:
-                            result = iota // fi - 1, fi
-                            result_count += 1
-
-        return result
+            return i, val
 
     def get_samples(self):
         """
@@ -206,7 +200,7 @@ class L0Sampler:
             Time Complexity
                 O(log(n)**4)
 
-        :return:    Return dic of tuples (i, a_i).
+        :return:    Return dict of tuples (i, a_i).
         :rtype:     dict
         """
 

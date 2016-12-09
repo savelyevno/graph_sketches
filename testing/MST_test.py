@@ -50,7 +50,7 @@ def test1_approx():
 
     timer.start()
 
-    mst_alg = ApproximateMSTAlgorithm(n, 1)
+    mst_alg = ApproximateMSTAlgorithm(n, 1, 10)
     mst_alg.add_edges(E)
 
     print('total build time', timer.stop())
@@ -87,11 +87,11 @@ def test1_exact():
 
 
 def test2(p, n, eps, print_log=False):
-
+    W = 1000
     timer.start()
 
     def gen_w_f():
-        return random.randint(1, 1000)
+        return random.randint(1, W)
 
     E, g = generate_weighted_graph(n, p, gen_w_f)
 
@@ -118,7 +118,7 @@ def test2(p, n, eps, print_log=False):
 
     if print_log:
         timer.start()
-    approx_mst_alg = ApproximateMSTAlgorithm(n, eps)
+    approx_mst_alg = ApproximateMSTAlgorithm(n, eps, W)
     if print_log:
         print('approximate total build time', timer.stop())
 
@@ -171,7 +171,7 @@ def test2(p, n, eps, print_log=False):
 
         print()
     print('approx - ordinary:', approx_w - w, 'ratio:', (approx_w - w)/w)
-    print('exact - ordinary:', exact_w - w)
+    print('exact - ordinary:', exact_w - w, 'ratio:', (exact_w - w)/w)
 
     return (approx_w - w)/w
 
@@ -184,65 +184,72 @@ def test3(n):
     for test in range(0, T):
 
         timer.start()
-        avg += test2(5/n, n, 0.5, True)
+        avg += test2(2/(n-1), n, 1, True)
         print('__________________________________________________________')
 
     print('avg ratio:', avg/T)
 
 
 def test4(n):
+    W = 100
+    eps = 0.5
     random.seed(0)
 
     timer.start()
-    sp_forest_alg = SpanningForestAlgorithm(n)
-    print('init time:', timer.stop())
+    ord_mst_alg = OrdinaryMSTAlgorithm(n)
+    print('ordinary init time:', timer.stop())
 
-    p = 0.9
+    timer.start()
+    approx_mst_alg = ApproximateMSTAlgorithm(n, eps)
+    print('approx init time:', timer.stop())
 
-    E = set()
-    g = build_g([], n)
-    E_inv = set()
-    for i in range(n):
-        for j in range(i + 1, n):
-            E_inv.add(Edge(i, j))
+    timer.start()
+    exact_mst_alg = ExactMSTAlgorithm(n)
+    print('exact init time:', timer.stop())
+    print()
 
     random.seed(0)
+    edge_cnt = 0
     while True:
-        if random.random() < p:
-            e = random.sample(E_inv, 1)[0]
+        u = random.randint(0, n - 1)
+        v = random.randint(0, n - 1)
+        while u == v:
+            v = random.randint(0, n - 1)
+        w = random.randint(1, W)
+        edge = WEdge(u, v, w)
 
-            E.add(e)
-            E_inv.remove(e)
-            g[e.u].add(e.v)
-            g[e.v].add(e.u)
-            timer.start()
-            sp_forest_alg.add_edge(e)
-        elif len(E) > 0:
-            e = random.sample(E, 1)[0]
+        edge_cnt += 1
 
-            E_inv.add(e)
-            E.remove(e)
-            g[e.u].remove(e.v)
-            g[e.v].remove(e.u)
+        ord_mst_alg.add_edge(edge)
+        approx_mst_alg.add_edge(edge)
+        exact_mst_alg.add_edge(edge)
 
-            timer.start()
-            sp_forest_alg.remove_edge(e)
-
-        if random.randint(0, 100) == 0:
-            timer.start()
-            cc = count_cc(g, n)
-            print('naive cc count time', timer.stop())
+        if random.randint(0, 10) == 0:
+            print('edge count:', edge_cnt)
 
             timer.start()
-            span_size = len(sp_forest_alg.get_sp_forest_edges())
-            print('build span tree time', timer.stop())
+            w = ord_mst_alg.get_weight()
+            print('ordinary solve time', timer.stop())
+            print()
 
-            if span_size != n - cc:
-                print('Fail')
-            else:
-                print('Ok')
-            print('edges count:', len(E))
-            print('________________________________________________')
+            timer.start()
+            approx_w = int(approx_mst_alg.get_weight())
+            print('approx solve time', timer.stop())
+            print()
+
+            timer.start()
+            exact_w = exact_mst_alg.get_weight()
+            print('exact solve', timer.stop())
+            print()
+
+            print('ord mst alg weight:', w)
+            print('approx mst alg weight:', approx_w)
+            print('exact mst alg weight:', exact_w)
+            print()
+
+            print('approx - ordinary:', approx_w - w, 'ratio:', (approx_w - w) / w)
+            print('exact - ordinary:', exact_w - w, 'ratio:', (exact_w - w) / w)
+            print('________________________________________________________________')
 
 
 def test5(n):
@@ -283,5 +290,5 @@ def test5(n):
 
 
 # test1()
-# test1_exact()
-test3(1000)
+# test1_approx()
+test3(100)

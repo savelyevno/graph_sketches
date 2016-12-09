@@ -1,6 +1,6 @@
 from math import log
 
-from l0_sampler.sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
+from l0_sampler.plain.sparse_recovery.OneSparseRecoverer import OneSparseRecoverer
 from tools.hash_function import pick_k_ind_hash_function
 
 

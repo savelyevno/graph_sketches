@@ -1,8 +1,8 @@
 from random import randint, getrandbits
 
-from l0_sampler_fast.L0Sampler import L0Sampler
-from tools.validation import check_type, check_in_range
 from graph_representation.tools import Edge, WEdge, edge_to_index, index_to_edge
+from l0_sampler.fast.L0Sampler import L0Sampler
+from tools.validation import check_in_range
 
 
 class GraphSketch:

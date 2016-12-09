@@ -21,7 +21,7 @@ class ApproximateMSTAlgorithm:
         self.eps = eps
         self.W = W
 
-        self.r = ceil(log(W, 1 + eps))
+        self.r = ceil(log(W, 1 + eps)) + 1
 
         self.w = tuple((1 + self.eps)**i for i in range(self.r))
         self.lam = tuple((1 + self.eps)**(i + 1) - (1 + self.eps)**i for i in range(self.r))
@@ -77,9 +77,18 @@ class ApproximateMSTAlgorithm:
         :rtype:
         """
 
-        result = self.n - (1 + self.eps)**self.r
+        # cc = [self.span_forest_instances[i].count_cc() for i in range(self.r)]
+        #
+        # result = self.n - cc[0]
+        #
+        # for i in range(1, self.r):
+        #     result += self.w[i]*(cc[i - 1] - cc[i])
 
-        for i in range(self.r):
-            result += self.lam[i]*self.span_forest_instances[i].count_cc()
+        result = self.n
+
+        for i in range(self.r - 1):
+            result += self.span_forest_instances[i].count_cc()*self.lam[i]
+
+        result -= self.span_forest_instances[-1].count_cc()*self.w[-1]
 
         return result

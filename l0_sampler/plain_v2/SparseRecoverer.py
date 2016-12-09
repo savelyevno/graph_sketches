@@ -5,7 +5,6 @@ from tools.hash_function import pick_k_ind_hash_function
 from tools.primality_test import prime_getter
 
 
-
 class SparseRecoverer:
     """
         s-sparse recovery data structure.
