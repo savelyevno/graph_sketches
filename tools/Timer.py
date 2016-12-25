@@ -27,7 +27,7 @@ class Ticker:
         def handler(signum, frame):
             action()
             if self.handlers[this_handler_id] is not None:
-                signal.alarm(5)
+                signal.alarm(period)
 
         self.handlers.append(handler)
 

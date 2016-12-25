@@ -23,7 +23,7 @@ class GraphSketch:
             https://people.cs.umass.edu/~mcgregor/papers/12-dynamic.pdf
     """
 
-    def __init__(self, n):
+    def __init__(self, n, init_seed=-1):
         """
             Initializes l0-sampler for every vertex with the same
             random parameters to be able to combine them.
@@ -37,8 +37,11 @@ class GraphSketch:
 
         self.n = n
 
-        self.init_seed = getrandbits(32)
-        self.a = tuple(L0Sampler(n*(n - 1) >> 1, self.init_seed) for i in range(n))
+        if init_seed == -1:
+            self.init_seed = getrandbits(32)
+        else:
+            self.init_seed = init_seed
+        self.a = tuple(L0Sampler(n*(n - 1) >> 1, 1e-1, self.init_seed) for i in range(n))
 
     def add_edge(self, e):
         """
@@ -188,7 +191,7 @@ class GraphSketch:
 
         return result
 
-    def add(self, another_graph_sketch):
+    def add_another_sketch(self, another_graph_sketch):
         """
             Adds two sketches together.
 

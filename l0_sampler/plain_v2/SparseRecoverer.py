@@ -58,7 +58,7 @@ class SparseRecoverer:
         self.sparse_degree = s
 
         self.columns = 2*s
-        self.rows = int(log(s / delta))
+        self.rows = int(log(self.sparse_degree / self.delta))
 
         self.hash_function = tuple(pick_k_ind_hash_function(n, self.columns, 2) for i in range(self.rows))
 

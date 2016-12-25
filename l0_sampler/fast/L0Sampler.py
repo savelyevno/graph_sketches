@@ -32,9 +32,9 @@ class L0Sampler:
 
     __slots__ = 'init_seed', 'n_hash_power', 'n', 'n_sq', 'levels', 'eps', 'delta', 'sparse_degree', 'k',\
                 'hash_function', 'delta_r', 'recoverers_values', 'recoverers_values_tmp', 'recoverers_rows',\
-                'recoverers_columns', 'recoverers_column_hash_params', 'prime_after_n', 'one_sp_rec_p', 'levels_count'
+                'recoverers_columns', 'recoverers_column_hash_params', 'prime_after_n', 'one_sp_rec_p'
 
-    def __init__(self, n, param=50000, init_seed=-1):
+    def __init__(self, n, delta=-1, init_seed=-1):
         """
 
         Time Complexity:
@@ -42,11 +42,18 @@ class L0Sampler:
 
         :param n:           Length of vector a.
         :type n:            int
+        :param delta:       delta parameter of the l0-sampler. -1 ==> delta = 1/log2(n)
+        :type delta:        float
         :param init_seed:   l0-samplers that are initialized with the same value of
                             init_seed will have the same random parameters.
         :type init_seed:    int
         """
 
+        if delta == -1:
+            delta = 1/log2(n)
+
+        if init_seed == -1:
+            init_seed = random.getrandbits(32)
         random.seed(init_seed)
         self.init_seed = init_seed
 
@@ -55,17 +62,14 @@ class L0Sampler:
 
         self.n = n
         self.n_sq = n*n
-        self.levels = ceil(log2(n))
+        self.levels = ceil(log2(self.n))
 
-        # c = 1000
-        # param = 100*c
-        self.eps = 1/param
-        self.delta = 1/param
+        self.eps = delta
+        self.delta = delta
 
-        self.sparse_degree = int(ceil(log(1 / self.eps) + log(1 / self.delta)))
-        # self.sparse_degree = int(2*log(param))
-        self.k = self.sparse_degree >> 1
-        # self.k = 10
+        self.k = 4
+        # self.sparse_degree = ceil(2*(log2(1 / self.delta)))
+        self.sparse_degree = 2*self.k
 
         self.hash_function = pick_k_ind_hash_function(n, n ** self.n_hash_power, self.k)
 
@@ -73,7 +77,8 @@ class L0Sampler:
         self.delta_r = self.delta
         self.recoverers_values = {}
         self.recoverers_values_tmp = {}
-        self.recoverers_rows = int(log(self.sparse_degree / self.delta_r))
+        # self.recoverers_rows = int(log2(self.sparse_degree / self.delta_r))
+        self.recoverers_rows = 4
         self.recoverers_columns = 2 * self.sparse_degree
 
         # parameters to hash function that hashes update index into some column
@@ -84,8 +89,6 @@ class L0Sampler:
 
         # prime for ring Z_p from which we choose z in 1-sparse recoverers
         self.one_sp_rec_p = prime_getter.get_next_prime(n*100)
-
-        self.levels_count = [0 for i in range(self.levels)]
 
     def get_one_sp_rec_z(self, level, row, column):
         """
@@ -155,7 +158,6 @@ class L0Sampler:
         n_copy = self.n ** self.n_hash_power - 1
         max_l = 0
         while n_copy >= hash_value and max_l < self.levels:
-            self.levels_count[max_l] += 1
             max_l += 1
             n_copy >>= 1
 
@@ -193,6 +195,31 @@ class L0Sampler:
 
             return i, val
 
+        # result = None
+        # result_hash = 2*(self.n**self.n_hash_power)
+        #
+        # for level in range(self.levels):
+        #     for row in range(self.recoverers_rows):
+        #         for column in range(self.recoverers_columns):
+        #             if (level, row, column) not in self.recoverers_values:
+        #                 continue
+        #
+        #             recoverer = self.recoverers_values[(level, row, column)]
+        #
+        #             z = recoverer[0]
+        #             iota = recoverer[1]
+        #             fi = recoverer[2]
+        #             tau = recoverer[3]
+        #
+        #             if fi != 0 and iota % fi == 0 and iota // fi > 0 and \
+        #                             tau == fi * pow(z, iota // fi, self.one_sp_rec_p) % self.one_sp_rec_p:
+        #                 index = iota // fi - 1
+        #                 value = fi
+        #                 if self.hash_function(index) < result_hash:
+        #                     result = index, value
+        #
+        # return result
+
     def get_samples(self):
         """
             Get l0-samples.
@@ -208,8 +235,6 @@ class L0Sampler:
 
         for level in range(self.levels):
             for row in range(self.recoverers_rows):
-                if (level, row) not in self.recoverers_column_hash_params:
-                    continue
                 for column in range(self.recoverers_columns):
                     if (level, row, column) not in self.recoverers_values:
                         continue

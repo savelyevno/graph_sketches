@@ -1,5 +1,7 @@
 import random
 from math import log2, ceil
+import numpy as np
+import matplotlib.pyplot as plt
 
 from graph_representation.GraphSketch import GraphSketch
 from graph_representation.tools import Edge, WEdge
@@ -88,7 +90,8 @@ def test1_exact():
 
 def test2(p, n, eps, print_log=False):
     W = 1000
-    timer.start()
+    if print_log:
+        timer.start()
 
     def gen_w_f():
         return random.randint(1, W)
@@ -131,20 +134,20 @@ def test2(p, n, eps, print_log=False):
 
         print()
 
-    if print_log:
-        timer.start()
-    exact_mst_alg = ExactMSTAlgorithm(n)
-    if print_log:
-        print('exact total build time', timer.stop())
-
-    if print_log:
-        timer.start()
-        exact_mst_alg.add_edges(E)
-
-    if print_log:
-        print('exact edges add time', timer.stop())
-
-        print()
+    # if print_log:
+    #     timer.start()
+    # exact_mst_alg = ExactMSTAlgorithm(n)
+    # if print_log:
+    #     print('exact total build time', timer.stop())
+    #
+    # if print_log:
+    #     timer.start()
+    #     exact_mst_alg.add_edges(E)
+    #
+    # if print_log:
+    #     print('exact edges add time', timer.stop())
+    #
+    #     print()
 
     w = ord_mst_alg.get_weight()
 
@@ -156,24 +159,24 @@ def test2(p, n, eps, print_log=False):
 
         print()
 
-    if print_log:
-        timer.start()
-    exact_w = exact_mst_alg.get_weight()
-    if print_log:
-        print('exact solve', timer.stop())
-
-        print()
+    # if print_log:
+    #     timer.start()
+    # exact_w = exact_mst_alg.get_weight()
+    # if print_log:
+    #     print('exact solve', timer.stop())
+    #
+    #     print()
 
     if print_log:
         print('ord mst alg weight:', w)
         print('approx mst alg weight:', approx_w)
-        print('exact mst alg weight:', exact_w)
+        # print('exact mst alg weight:', exact_w)
 
         print()
-    print('approx - ordinary:', approx_w - w, 'ratio:', (approx_w - w)/w)
-    print('exact - ordinary:', exact_w - w, 'ratio:', (exact_w - w)/w)
+    # print('approx - ordinary:', approx_w - w, 'ratio:', (approx_w - w)/w)
+    # print('exact - ordinary:', exact_w - w, 'ratio:', (exact_w - w)/w)
 
-    return (approx_w - w)/w
+    return (approx_w - w)/(w + int(w == 0))
 
 
 def test3(n):
@@ -184,7 +187,7 @@ def test3(n):
     for test in range(0, T):
 
         timer.start()
-        avg += test2(2/(n-1), n, 1, True)
+        avg += test2(4*2/(n-1), n, 0.1, True)
         print('__________________________________________________________')
 
     print('avg ratio:', avg/T)
@@ -289,6 +292,55 @@ def test5(n):
             print('build span tree time', timer.stop(), 'edge count', edge_cnt)
 
 
+def plot_ratio_on_p():
+    random.seed(0)
+
+    n = 50
+    ps = np.linspace(1e-3, 1, 1 << 5)
+    rs = []
+
+    # for p in ps:
+    #     avg = 0
+    #
+    #     timer.start()
+    #
+    #     k = 50
+    #     for i in range(k):
+    #         # avg += test2(p, n, 1)
+    #         avg = max(avg, test2(p, n, 1))
+    #     # avg /= k
+    #
+    #     print(p, timer.stop())
+    #
+    #     rs.append(avg)
+    #
+    # with open('io4/2.txt', 'w') as file:
+    #     s = ''
+    #     for it in ps:
+    #         s += str(it) + ' '
+    #     s += '\n'
+    #
+    #     file.write(s)
+    #
+    #     s = ''
+    #     for it in rs:
+    #         s += str(it) + ' '
+    #     s += '\n'
+    #
+    #     file.write(s)
+
+    with open('io4/2.txt', 'r') as file:
+        ps = [float(it) for it in file.readline().split()]
+        rs = [float(it) for it in file.readline().split()]
+
+    plt.grid()
+    plt.xlabel('$p$', fontsize=16)
+    plt.ylabel('$\epsilon\'$', fontsize=16, rotation='horizontal')
+    plt.plot(ps, rs)
+
+    plt.show()
+
 # test1()
 # test1_approx()
-test3(100)
+# test3(1000)
+plot_ratio_on_p()

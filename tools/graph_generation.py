@@ -15,17 +15,21 @@ def count_cc(g, n):
     used = [False] * n
     res = 0
 
-    def dfs(u):
-        used[u] = True
-
-        for v in g[u]:
-            if not used[v]:
-                dfs(v)
-
     for i in range(n):
         if not used[i]:
             res += 1
-            dfs(i)
+
+            used[i] = True
+
+            q = [i]
+            while len(q) > 0:
+                u = q[-1]
+                q.pop()
+
+                for v in g[u]:
+                    if not used[v]:
+                        used[v] = True
+                        q.append(v)
 
     return res
 
@@ -58,5 +62,21 @@ def generate_weighted_graph(n, p, gen_weight_fun):
                 E.append(WEdge(i, j, gen_weight_fun()))
 
     g = build_weighted_g(E, n)
+
+    return E, g
+
+
+def read_from_file(file_name):
+
+    with open(file_name, 'r') as file:
+        split_lines = [line.split() for line in file.readlines()]
+    E = [Edge(int(line[0]), int(line[1])) for line in split_lines]
+
+    n = 0
+    for e in E:
+        n = max(e[0], e[1], n)
+    n += 1
+
+    g = build_g(E, n)
 
     return E, g

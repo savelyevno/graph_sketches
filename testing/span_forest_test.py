@@ -5,7 +5,7 @@ from graph_representation.GraphSketch import GraphSketch
 from graph_representation.tools import Edge
 from graph_algorithms.spanning_forest.SpanningForestAlgorithm import SpanningForestAlgorithm
 from tools.Timer import Timer
-from tools.graph_generation import build_g, count_cc, generate_graph
+from tools.graph_generation import build_g, count_cc, generate_graph, read_from_file
 from tools.primality_test import prime_getter
 
 timer = Timer()
@@ -64,31 +64,75 @@ def test2(p, n, print_log=False):
 
     if print_log:
         timer.start()
-    span_size = len(sp_forest_alg.get_sp_forest_edges())
-
     cc = count_cc(g, n)
+    if print_log:
+        print('naive solve time:', timer.stop())
 
     if print_log:
-        # print(cc)
-        # print(span_size)
-        print(span_size == n - cc)
+        timer.start()
+    cc_est = sp_forest_alg.count_cc()
+
+    if print_log:
         print('solving time', timer.stop())
 
-    return span_size == n - cc
+    return cc_est == cc, cc
+
+
+def test2_file(filename, print_log=False):
+
+    timer.start()
+
+    E, g = read_from_file(filename)
+    n = len(g)
+
+    if print_log:
+        print('gen time', timer.stop())
+
+        print('edges: ', len(E))
+
+    if print_log:
+        timer.start()
+    sp_forest_alg = SpanningForestAlgorithm(n)
+    if print_log:
+        print('total build time', timer.stop())
+
+    if print_log:
+        timer.start()
+    sp_forest_alg.add_edges(E)
+    if print_log:
+        print('edges add time', timer.stop())
+
+    if print_log:
+        timer.start()
+    cc = count_cc(g, n)
+    if print_log:
+        print('naive solve time:', timer.stop())
+
+    if print_log:
+        timer.start()
+    cc_est = sp_forest_alg.count_cc()
+
+    if print_log:
+        print('solving time', timer.stop())
+
+    return cc_est == cc, cc
 
 
 def test3(n):
     random.seed(0)
 
     T = 1
+    p = n**(-0.7)
     for test in range(0, T):
 
         timer.start()
-        result = test2(0.1, n, True)
+        result, cc = test2_file('graphs/rmat1.txt', True)
+        # result, cc = test2(p, n, True)
         if not result:
             print(test, 'Fail', timer.stop())
         else:
             print(test, 'Ok', timer.stop())
+        print(cc)
         print('__________________________________________________________')
 
 
@@ -115,8 +159,8 @@ def test4(n):
 
             E.add(e)
             E_inv.remove(e)
-            g[e.u].add(e.v)
-            g[e.v].add(e.u)
+            g[e.u].add_another_sketch(e.v)
+            g[e.v].add_another_sketch(e.u)
             timer.start()
             sp_forest_alg.add_edge(e)
         elif len(E) > 0:
